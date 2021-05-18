@@ -14,7 +14,10 @@ const createWindow = () => {
     height: 600,
   });
   mainWindow.webContents.on("dom-ready", () => {
-    app.quit();
+    // without interval it panic?
+    setInterval(() => {
+      app.quit();
+    }, 1);
   });
   mainWindow.loadFile(path.join(__dirname, "index.html"));
 };
