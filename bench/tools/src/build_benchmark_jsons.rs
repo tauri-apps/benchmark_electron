@@ -6,10 +6,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 
-fn target_dir() -> PathBuf {
-    root_dir().join("target").join("release")
-}
-
 fn root_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -43,7 +39,7 @@ fn main() {
 
     // current data
     let current_data_buffer = BufReader::new(
-        File::open(target_dir().join("bench.json")).expect("Unable to read current data file"),
+        File::open(root_dir().join("bench.json")).expect("Unable to read current data file"),
     );
     let current_data: BenchResult =
         serde_json::from_reader(current_data_buffer).expect("Unable to read current data buffer");
