@@ -1,0 +1,26 @@
+[workspace]
+members = [
+  ".",
+  "bench/tools",
+]
+
+[package]
+name = "electron-bench"
+version = "0.1.0"
+authors = [ "Tauri Programme within The Commons Conservancy" ]
+edition = "2018"
+license = "Apache-2.0 OR MIT"
+description = "Cross-platform WebView rendering library"
+
+
+[dev-dependencies]
+serde = { version = "1.0", features = [ "derive" ] }
+serde_json = "1.0"
+anyhow = "1.0.40"
+chrono = "0.4.19"
+tempfile = "3.2.0"
+
+[[bench]]
+name = "electron_bench"
+harness = false
+path = "./bench/main.rs"

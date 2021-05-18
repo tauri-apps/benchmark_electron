@@ -1,0 +1,63 @@
+name: test
+
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        rust_version: [stable]
+        platform:
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest, kind: bench }
+
+    runs-on: ${{ matrix.platform.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.platform.target }}
+
+      - name: install xvfb and hyperfine (bench only)
+        if: matrix.platform.kind == 'bench'
+        run: |
+          sudo apt-get install -y xvfb
+          wget https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine_1.11.0_amd64.deb
+          sudo dpkg -i hyperfine_1.11.0_amd64.deb
+
+      - name: build electron hellow_world
+        if: matrix.platform.kind == 'bench'
+        run: |
+          cd hello_world
+          yarn && yarn package
+
+      - name: build benchmarks
+        if: matrix.platform.kind == 'bench'
+        run: |
+          xvfb-run --auto-servernum cargo bench
+
+      - name: post benchmarks
+        if: matrix.platform.kind == 'bench'
+        env:
+          ORG_TAURI_BOT: ${{ secrets.ORG_TAURI_BOT }}
+        run: |
+          git clone --depth 1 -b gh-pages https://tauri-bot:${ORG_TAURI_BOT}@github.com/tauri-apps/benchmark_results.git gh-pages
+          cargo run --manifest-path ./bench/tools/Cargo.toml --bin build_benchmark_jsons
+          cd gh-pages
+          git config user.name "tauri-bot"
+          git config user.email "tauri-bot@tauri.studio"
+          git add .
+          git commit --message "Update benchmarks"
+          git push origin gh-pages
+
+      - name: Worker info
+        if: matrix.kind == 'bench'
+        run: |
+          cat /proc/cpuinfo
+          cat /proc/meminfo
