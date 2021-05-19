@@ -34,8 +34,8 @@ const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
         None,
     ),
     (
-        "hello_world",
-        "apps/hello_world/out/startup-electron-linux-x64/startup-electron",
+        "cpu_intensive",
+        "apps/cpu_intensive/out/cpu-intensive-linux-x64/cpu-intensive",
         None,
     ),
 ];
