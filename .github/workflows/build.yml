@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - dev
 
 jobs:
   test:
@@ -34,10 +37,16 @@ jobs:
           wget https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine_1.11.0_amd64.deb
           sudo dpkg -i hyperfine_1.11.0_amd64.deb
 
-      - name: build electron hellow_world
+      - name: build electron hello_world
         if: matrix.platform.kind == 'bench'
         run: |
-          cd hello_world
+          cd apps/hello_world
+          yarn && yarn package
+
+      - name: build electron cpu_intensive
+        if: matrix.platform.kind == 'bench'
+        run: |
+          cd apps/cpu_intensive
           yarn && yarn package
 
       - name: build benchmarks
