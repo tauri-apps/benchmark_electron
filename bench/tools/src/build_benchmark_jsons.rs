@@ -30,7 +30,6 @@ struct BenchResult {
     max_memory: HashMap<String, u64>,
     thread_count: HashMap<String, u64>,
     syscall_count: HashMap<String, u64>,
-    cargo_deps: usize,
 }
 
 fn main() {
