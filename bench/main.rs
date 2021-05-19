@@ -8,7 +8,6 @@ use serde_json::Value;
 use std::{
     collections::HashMap,
     env, fs,
-    path::Path,
     process::{Command, Stdio},
 };
 use utils::root_path;
@@ -29,12 +28,12 @@ fn write_json(filename: &str, value: &Value) -> Result<()> {
 /// The list of the examples of the benchmark name, arguments and return code
 const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
     (
-        "hello_world",
+        "electron_hello_world",
         "apps/hello_world/out/startup-electron-linux-x64/startup-electron",
         None,
     ),
     (
-        "cpu_intensive",
+        "electron_cpu_intensive",
         "apps/cpu_intensive/out/cpu-intensive-linux-x64/cpu-intensive",
         None,
     ),
@@ -110,21 +109,6 @@ fn get_binary_sizes() -> Result<HashMap<String, u64>> {
     Ok(sizes)
 }
 
-fn cargo_deps() -> usize {
-    let cargo_lock = utils::root_path().join("Cargo.lock");
-    let mut count = 0;
-    let file = std::fs::File::open(cargo_lock).unwrap();
-    use std::io::BufRead;
-    for line in std::io::BufReader::new(file).lines() {
-        if line.unwrap().starts_with("[[package]]") {
-            count += 1
-        }
-    }
-    println!("cargo_deps {}", count);
-    assert!(count > 10); // Sanity check.
-    count
-}
-
 const RESULT_KEYS: &[&str] = &["mean", "stddev", "user", "system", "min", "max"];
 
 fn run_exec_time() -> Result<HashMap<String, HashMap<String, f64>>> {
@@ -182,13 +166,11 @@ fn run_exec_time() -> Result<HashMap<String, HashMap<String, f64>>> {
 struct BenchResult {
     created_at: String,
     sha1: String,
-
     exec_time: HashMap<String, HashMap<String, f64>>,
     binary_size: HashMap<String, u64>,
     max_memory: HashMap<String, u64>,
     thread_count: HashMap<String, u64>,
     syscall_count: HashMap<String, u64>,
-    cargo_deps: usize,
 }
 
 fn main() -> Result<()> {
@@ -210,7 +192,6 @@ fn main() -> Result<()> {
             .to_string(),
         exec_time: run_exec_time()?,
         binary_size: get_binary_sizes()?,
-        cargo_deps: cargo_deps(),
         ..Default::default()
     };
 
