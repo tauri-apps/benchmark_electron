@@ -49,6 +49,12 @@ jobs:
           cd apps/cpu_intensive
           yarn && yarn package
 
+      - name: build electron file_transfer
+        if: matrix.platform.kind == 'bench'
+        run: |
+          cd apps/file_transfer
+          yarn && yarn package
+
       - name: build benchmarks
         if: matrix.platform.kind == 'bench'
         run: |

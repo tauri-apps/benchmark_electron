@@ -37,6 +37,11 @@ const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
         "apps/cpu_intensive/out/cpu-intensive-linux-x64/cpu-intensive",
         None,
     ),
+    (
+        "electron_3mb_transfer",
+        "apps/file_transfer/out/file-transfer-linux-x64/file-transfer",
+        None,
+    ),
 ];
 
 fn run_strace_benchmarks(new_data: &mut BenchResult) -> Result<()> {
