@@ -77,7 +77,7 @@ jobs:
           git config user.name "tauri-bench"
           git config user.email "gh.tauribot@gmail.com"
           git add .
-          git commit --message "Update benchmarks"
+          git commit --message "Update Electron benchmarks"
           git push origin gh-pages
 
       - name: Worker info
