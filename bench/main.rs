@@ -82,25 +82,33 @@ fn run_strace_benchmarks(new_data: &mut BenchResult) -> Result<()> {
 }
 
 fn run_max_mem_benchmark() -> Result<HashMap<String, u64>> {
-    let mut results = HashMap::<String, u64>::new();
+  let mut results = HashMap::<String, u64>::new();
 
-    for (name, example_exe, return_code) in EXEC_TIME_BENCHMARKS {
-        let proc = Command::new("time")
-            .args(&["-v", utils::root_path().join(example_exe).to_str().unwrap()])
-            .stdout(Stdio::null())
-            .stderr(Stdio::piped())
-            .spawn()?;
+  for (name, example_exe, _) in EXEC_TIME_BENCHMARKS {
+    let benchmark_file = utils::root_path().join(format!("mprof{}_.dat", name));
+    let benchmark_file = benchmark_file.to_str().unwrap();
 
-        let proc_result = proc.wait_with_output()?;
-        if let Some(code) = return_code {
-            assert_eq!(proc_result.status.code().unwrap(), *code);
-        }
-        let out = String::from_utf8(proc_result.stderr)?;
+    let proc = Command::new("mprof")
+      .args(&[
+        "run",
+        "-C",
+        "-o",
+        benchmark_file,
+        utils::root_path().join(example_exe).to_str().unwrap(),
+      ])
+      .stdout(Stdio::null())
+      .stderr(Stdio::piped())
+      .spawn()?;
 
-        results.insert(name.to_string(), utils::parse_max_mem(&out).unwrap());
-    }
+    let proc_result = proc.wait_with_output()?;
+    println!("{:?}", proc_result);
+    results.insert(
+      name.to_string(),
+      utils::parse_max_mem(&benchmark_file).unwrap(),
+    );
+  }
 
-    Ok(results)
+  Ok(results)
 }
 
 fn get_binary_sizes() -> Result<HashMap<String, u64>> {

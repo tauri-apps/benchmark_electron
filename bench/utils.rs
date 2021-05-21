@@ -3,11 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 use serde::Serialize;
-use std::{
-    collections::HashMap,
-    path::PathBuf,
-    process::{Command, Output, Stdio},
-};
+use std::{collections::HashMap, io::BufRead, path::PathBuf, process::{Command, Output, Stdio}};
 
 pub fn root_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -36,20 +32,32 @@ pub fn run_collect(cmd: &[&str]) -> (String, String) {
     (stdout, stderr)
 }
 
-pub fn parse_max_mem(output: &str) -> Option<u64> {
-    // Takes the output from "time -v" as input and extracts the 'maximum
-    // resident set size' and returns it in bytes.
-    for line in output.lines() {
-        if line
-            .to_lowercase()
-            .contains("maximum resident set size (kbytes)")
-        {
-            let value = line.split(": ").nth(1).unwrap();
-            return Some(str::parse::<u64>(value).unwrap() * 1024);
+pub fn parse_max_mem(file_path: &str) -> Option<u64> {
+  let file = std::fs::File::open(file_path).unwrap();
+  let output = std::io::BufReader::new(file);
+  let mut highest: u64 = 0;
+  // MEM 203.437500 1621617192.4123
+  for line in output.lines() {
+    if let Ok(line) = line {
+      // split line by space
+      let split = line.split(" ").collect::<Vec<_>>();
+      if split.len() == 3 {
+        // mprof generate result in MB
+        let current_bytes = str::parse::<f64>(split[1]).unwrap() as u64 * 1024 * 1024;
+        if current_bytes > highest {
+          highest = current_bytes;
         }
+      }
     }
+  }
 
-    None
+  std::fs::remove_file(file_path).unwrap();
+
+  if highest > 0 {
+    return Some(highest);
+  }
+
+  None
 }
 
 #[derive(Debug, Clone, Serialize)]
