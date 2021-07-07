@@ -1,3 +1,9 @@
+/*
+  @author molant <https://github.com/molant>
+  https://github.com/crossplatform-dev/xplat-challenges/blob/main/cpu/electron/src/worker.js
+*/
+
+
 const isPrime = (number) => {
     if (number % 2 === 0 && number > 2) {
         return false;

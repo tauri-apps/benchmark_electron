@@ -1,3 +1,8 @@
+/*
+  @author molant <https://github.com/molant>
+  https://github.com/crossplatform-dev/xplat-challenges/blob/main/cpu/electron/src/site.js
+*/
+
 // Create web worker
 const THRESHOLD = 10000000;
 const worker = new Worker("./worker.js");

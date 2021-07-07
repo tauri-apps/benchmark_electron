@@ -1,3 +1,8 @@
+/*
+  @author molant <https://github.com/molant>
+  https://github.com/crossplatform-dev/xplat-challenges/blob/main/cpu/electron/src/index.js
+*/
+
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
