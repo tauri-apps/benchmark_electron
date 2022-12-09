@@ -8,14 +8,26 @@ on:
     branches:
       - dev
 
+env:
+  RUST_BACKTRACE: 1
+  CARGO_PROFILE_DEV_DEBUG: 0 # This would add unnecessary bloat to the target folder, decreasing cache efficiency.
+  LC_ALL: en_US.UTF-8 # This prevents strace from changing it's number format to use commas.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  bench:
     strategy:
       fail-fast: false
       matrix:
-        rust_version: [stable]
+        rust: [stable]
+        node: ["14"]
+        python: ["3.10"]
+        hyperfine: ["1.11.0"]
         platform:
-          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest, kind: bench }
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -23,61 +35,62 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: "14"
-      - name: install stable
+          node-version: ${{ matrix.node }}
+      - name: install ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: ${{ matrix.rust }}
           target: ${{ matrix.platform.target }}
 
       - name: Setup python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python }}
           architecture: x64
 
-      - name: install xvfb and hyperfine (bench only)
-        if: matrix.platform.kind == 'bench'
+      - name: install dependencies
         run: |
           python -m pip install --upgrade pip
           sudo apt-get install -y xvfb
-          wget https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine_1.11.0_amd64.deb
-          sudo dpkg -i hyperfine_1.11.0_amd64.deb
+          wget https://github.com/sharkdp/hyperfine/releases/download/v${{ matrix.hyperfine }}/hyperfine_${{ matrix.hyperfine }}_amd64.deb
+          sudo dpkg -i hyperfine_${{ matrix.hyperfine }}_amd64.deb
           pip install memory_profiler
 
       - name: build electron hello_world
-        if: matrix.platform.kind == 'bench'
         run: |
           cd apps/hello_world
           yarn && yarn package
 
       - name: build electron cpu_intensive
-        if: matrix.platform.kind == 'bench'
         run: |
           cd apps/cpu_intensive
           yarn && yarn package
 
       - name: build electron file_transfer
-        if: matrix.platform.kind == 'bench'
         run: |
           cd apps/file_transfer
           yarn && yarn package
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            bench/tools
+
       - name: build benchmarks
-        if: matrix.platform.kind == 'bench'
         run: |
           xvfb-run --auto-servernum cargo bench
 
       - name: clone current benchmarks
+        if: github.repository == 'tauri-apps/benchmark_electron' && github.ref == 'refs/heads/dev'
         uses: actions/checkout@v2
-        if: matrix.platform.kind == 'bench'
         with:
           token: ${{ secrets.BENCH_PAT }}
           path: gh-pages
           repository: tauri-apps/benchmark_results
 
       - name: post benchmarks
-        if: matrix.platform.kind == 'bench'
+        if: github.repository == 'tauri-apps/benchmark_electron' && github.ref == 'refs/heads/dev'
         run: |
           cargo run --manifest-path ./bench/tools/Cargo.toml --bin build_benchmark_jsons
           cd gh-pages
@@ -89,7 +102,6 @@ jobs:
           git push origin gh-pages
 
       - name: Worker info
-        if: matrix.kind == 'bench'
         run: |
           cat /proc/cpuinfo
           cat /proc/meminfo
