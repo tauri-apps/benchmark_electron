@@ -7,22 +7,7 @@
   </head>
   <body>
     <script>
-      const fs = require("fs");
-      const path = require("path");
-      const { ipcRenderer } = require("electron");
-
-      fs.readFile(
-        path.join(__dirname, "json_3mb.json"),
-        "utf-8",
-        (err, data) => {
-          if (err) {
-            ipcRenderer.send("process-error");
-            return;
-          }
-
-          ipcRenderer.send("process-complete");
-        }
-      );
+      window.electron.readFile();
     </script>
     <h1>Hello World!</h1>
     <p>Electron application for Tauri Benchmark's.</p>
