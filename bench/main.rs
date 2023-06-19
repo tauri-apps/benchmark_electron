@@ -26,6 +26,7 @@ fn write_json(filename: &str, value: &Value) -> Result<()> {
 }
 
 /// The list of the examples of the benchmark name, arguments and return code
+#[cfg(target_os = "linux")]
 const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
   (
     "electron_hello_world",
@@ -40,6 +41,44 @@ const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
   (
     "electron_3mb_transfer",
     "apps/file_transfer/out/file-transfer-linux-x64/file-transfer",
+    None,
+  ),
+];
+
+#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
+  (
+    "electron_hello_world",
+    "apps/hello_world/out/startup-electron-darwin-x64/startup-electron.app/Contents/MacOS/startup-electron",
+    None,
+  ),
+  (
+    "electron_cpu_intensive",
+    "apps/cpu_intensive/out/cpu-intensive-darwin-x64/cpu-intensive.app/Contents/MacOS/cpu-intensive",
+    None,
+  ),
+  (
+    "electron_3mb_transfer",
+    "apps/file_transfer/out/file-transfer-darwin-x64/file-transfer.app/Contents/MacOS/file-transfer",
+    None,
+  ),
+];
+
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+const EXEC_TIME_BENCHMARKS: &[(&str, &str, Option<i32>)] = &[
+  (
+    "electron_hello_world",
+    "apps/hello_world/out/startup-electron-darwin-arm64/startup-electron.app/Contents/MacOS/startup-electron",
+    None,
+  ),
+  (
+    "electron_cpu_intensive",
+    "apps/cpu_intensive/out/cpu-intensive-darwin-arm64/cpu-intensive.app/Contents/MacOS/cpu-intensive",
+    None,
+  ),
+  (
+    "electron_3mb_transfer",
+    "apps/file_transfer/out/file-transfer-darwin-arm64/file-transfer.app/Contents/MacOS/file-transfer",
     None,
   ),
 ];

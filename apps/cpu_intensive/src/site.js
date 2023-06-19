@@ -11,7 +11,6 @@ const start = document.getElementById("start");
 /** @type {HTMLParagraphElement} */
 const status = document.getElementById("status");
 const results = document.getElementById("results");
-const { ipcRenderer } = require("electron");
 
 const ITERATIONS = 1;
 
@@ -29,7 +28,7 @@ const onMessage = (message) => {
   status.innerHTML = `${prefix} Found <code>${message.data.count}</code> prime numbers in <code>${message.data.time}ms</code>`;
 
   if (message.data.status === "done") {
-    ipcRenderer.send("process-complete");
+    window.electron.onProcessComplete();
   }
 };
 
